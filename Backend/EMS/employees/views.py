@@ -14,7 +14,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     """
     queryset = Employee.objects.all()  # Get all employees
     serializer_class = EmployeeSerializer  # Use the EmployeeSerializer
-    permission_classes = [permissions.IsAuthenticated]  # Require authentication
+    permission_classes = [permissions.AllowAny]  # Require authentication
 
     def perform_create(self, serializer):
         """
