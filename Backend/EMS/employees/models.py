@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class Employee(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
@@ -8,11 +7,14 @@ class Employee(models.Model):
     department = models.CharField(max_length=100)
     designation = models.CharField(max_length=100)
     salary = models.DecimalField(max_digits=10, decimal_places=2)
+    dob = models.DateField(null=True, blank=True)  # Date of Birth
+    address = models.TextField(null=True, blank=True)  # Address
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
     class Meta:
         ordering = ['id']
