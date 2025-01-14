@@ -9,7 +9,27 @@ const EmployeeList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [user, setUser] = useState(null); // Add state for user
   const navigate = useNavigate();
+
+  const fetchUser = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/api/user/', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUser(response.data); // Set the user data
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+    }
+  };
 
   const fetchEmployees = async (page = 1, search = '') => {
     const token = localStorage.getItem('access_token');
@@ -40,6 +60,7 @@ const EmployeeList = () => {
   };
 
   useEffect(() => {
+    fetchUser(); // Fetch user data
     fetchEmployees(currentPage, searchTerm);
   }, [currentPage, searchTerm]);
 
@@ -101,9 +122,15 @@ const EmployeeList = () => {
               <td>{employee.salary}</td>
               <td>{employee.is_active ? 'Active' : 'Inactive'}</td>
               <td>
-                <button onClick={() => navigate(`/employees/edit/${employee.id}`)}>Edit</button>
-                <button onClick={() => handleDelete(employee.id)}>Delete</button>
+                {/* View button - visible to all users */}
                 <button onClick={() => navigate(`/employees/details/${employee.id}`)}>View</button>
+                {/* Edit and Delete buttons - visible only to admins */}
+                {user && user.is_staff && (
+                  <>
+                    <button onClick={() => navigate(`/employees/edit/${employee.id}`)}>Edit</button>
+                    <button onClick={() => handleDelete(employee.id)}>Delete</button>
+                  </>
+                )}
               </td>
             </tr>
           ))}

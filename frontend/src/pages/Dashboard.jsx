@@ -1,4 +1,3 @@
-// Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -8,13 +7,34 @@ const Dashboard = () => {
   const [employeeData, setEmployeeData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [user, setUser] = useState(null); // Add state for user
   const navigate = useNavigate();
 
+  const fetchUser = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/api/user/', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUser(response.data); // Set the user data
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+    }
+  };
+
   useEffect(() => {
+    fetchUser(); // Fetch user data
     const fetchData = async () => {
       const token = localStorage.getItem('access_token');
       if (!token) {
-        navigate('/login'); // Redirect to login if no token
+        navigate('/login');
         return;
       }
 
@@ -87,7 +107,10 @@ const Dashboard = () => {
       <h1>Dashboard</h1>
       <div className="dashboard-actions">
         <button onClick={() => navigate('/employees')}>Employee List</button>
-        <button onClick={() => navigate('/employees/add')}>Add Employee</button>
+        {/* Add Employee button - visible only to admins */}
+        {user && user.is_staff && (
+          <button onClick={() => navigate('/employees/add')}>Add Employee</button>
+        )}
         <button onClick={handleLogout}>Logout</button>
       </div>
       <div className="summary-cards">

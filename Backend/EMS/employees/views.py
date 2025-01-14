@@ -26,10 +26,11 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         return context
 
     def perform_create(self, serializer):
-        """
-        Override the creation logic to add custom behavior if needed.
-        """
-        serializer.save()
+        # Optionally, set the created_by field to the current user
+        if hasattr(self.request.user, 'is_staff') and self.request.user.is_staff:
+            serializer.save(created_by=self.request.user)
+        else:
+            serializer.save()
 
     def perform_update(self, serializer):
         """

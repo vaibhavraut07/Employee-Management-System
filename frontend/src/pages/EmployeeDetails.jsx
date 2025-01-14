@@ -1,4 +1,3 @@
-//Employee Details.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -7,10 +6,31 @@ const EmployeeDetails = () => {
   const [employee, setEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [user, setUser] = useState(null); // Add state for user
   const navigate = useNavigate();
   const { id } = useParams();
 
+  const fetchUser = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/api/user/', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUser(response.data); // Set the user data
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+    }
+  };
+
   useEffect(() => {
+    fetchUser(); // Fetch user data
     const fetchEmployee = async () => {
       const token = localStorage.getItem('access_token');
       if (!token) {
@@ -52,7 +72,10 @@ const EmployeeDetails = () => {
         <p><strong>Salary:</strong> {employee.salary}</p>
         <p><strong>Status:</strong> {employee.is_active ? 'Active' : 'Inactive'}</p>
       </div>
-      <button onClick={() => navigate(`/employees/edit/${employee.id}`)}>Edit</button>
+      {/* Edit button - visible only to admins */}
+      {user && user.is_staff && (
+        <button onClick={() => navigate(`/employees/edit/${employee.id}`)}>Edit</button>
+      )}
       <button onClick={() => navigate('/employees')}>Back to List</button>
     </div>
   );

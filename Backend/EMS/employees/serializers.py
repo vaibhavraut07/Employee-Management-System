@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Employee
 from django.contrib.auth.models import User
+from .models import Employee
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -10,29 +10,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ['username', 'password', 'email']
 
     def create(self, validated_data):
+        # Create a new user with is_staff=False by default
         user = User.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password'],
-            email=validated_data.get('email', '')
+            email=validated_data.get('email', ''),
+            is_staff=False  # New users are not staff by default
         )
         return user
 
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
-        fields = ['id', 'name', 'email', 'phone', 'department', 'designation', 'salary', 'dob', 'address', 'is_active', 'created_at', 'updated_at']
-
-    def to_representation(self, instance):
-        """
-        Customize the representation of the employee data.
-        Hide salary for non-admin and non-self users.
-        """
-        representation = super().to_representation(instance)
-        request = self.context.get('request')
-        user = request.user if request else None
-
-        # Hide salary if the user is not an admin or the employee themselves
-        if not (user and (user.is_staff or user == instance.user)):
-            representation.pop('salary', None)
-
-        return representation
+        fields = '__all__'
